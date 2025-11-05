@@ -1,0 +1,199 @@
+---
+title: "Super Awesome Project Template"
+output: word_document
+date: "2023-03-31"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Section One
+
+```{r student1}
+
+library(rvest)
+library(stringr)
+library(tidyr)
+library(sf)
+library(tidyverse)
+library(dplyr)
+
+url <- "https://www2.census.gov/geo/tiger/TIGER2023/ROADS/"
+x <- readLines(url)
+GEOID_url <- x %>% str_extract(pattern = "tl_2023_\\d{5}_roads.zip")
+GEOID_url <- na.omit(GEOID_url)
+GEOID <- GEOID_url %>% str_extract(pattern = "\\d{5}")
+
+Road_suffixes <- c("Rd", "Co Rd", "Ln", "St", "Dr", "Ct", "Ave", "Cir", "82", "Way", "Loop", "Pl", "Blvd")
+
+# Create an empty list to store data frames for each GEOID
+geoid_dfs1 <- list()
+
+# Loop through each GEOID to download and process the data
+for (i in 1:3233) {
+  curGEOID <- GEOID[i]
+  GEOID_file <- GEOID_url[i]
+  url11 <- str_c("https://www2.census.gov/geo/tiger/TIGER2023/ROADS/", GEOID_file)
+  temp_file <- tempfile()  # Create a temporary file to store the downloaded data
+  download.file(url11, dest = temp_file, mode = "wb")  # Download the data
+  unzip(temp_file, exdir = "RoadData")  # Unzip the downloaded file
+  
+  # Read the shapefile directly into a dataframe, selecting only the FULLNAME column
+  my_sf1 <- st_read(dsn = "RoadData", quiet = TRUE)[, "FULLNAME", drop = FALSE]
+  
+  # Calculate counts of road suffixes
+  
+  roads=function(x) {
+  my_sf1$FULLNAME %>% str_which(.,x)
+}
+g=sapply(Road_suffixes,roads)
+
+d=c(length(g$Rd),
+    length(g$`Co Rd`),length(g$Ln),length(g$St),length(g$Dr),length(g$Ct),length(g$Ave),length(g$Cir),length(g$`82`),length(g$Way),length(g$Loop),length(g$Pl),length(g$Blvd))
+
+names(d)=Road_suffixes
+temp=slice_max(as.data.frame(d),d,n=2) %>% rownames()
+  
+  
+  # Get the most common and second most common road suffixes
+  most_common1 <- temp[1]
+  second_most_common1 <- temp[2]
+  
+  # Create a data frame for the current GEOID
+  geoid_df1 <- data.frame(GEOID = curGEOID, MostCommon = most_common1, SecondMost = second_most_common1, stringsAsFactors = FALSE)
+  
+  # Add the data frame to the list
+  geoid_dfs1[[i]] <- geoid_df1
+  
+  # Remove temporary files and directories
+  file.remove(temp_file)
+  unlink("RoadData", recursive = TRUE, force = TRUE)
+}
+
+# Combine the list of data frames into a single data frame
+combined <- do.call(rbind, geoid_dfs1)
+
+# Write the combined data to a CSV file
+write_csv(combined, "combined.csv")
+
+# Remove duplicate rows based on GEOID
+final <- combined %>% distinct(GEOID, .keep_all = TRUE)
+
+# Write the final data to a CSV file
+write_csv(final, "final.csv")
+
+
+```
+
+
+## Section Two
+
+```{r student2}
+
+library(tigris)
+library(ggplot2)
+library(ggthemes)
+
+counties <- counties(c("Alabama","Arizona", "Arkansas", "California","Colorado", "Connecticut", "Delware", "Florida", "Georgia", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin","Wyoming"), cb = TRUE)
+
+
+
+
+suffix_colors=c("Rd"="blue","Co Rd"="orange","Ln"="darkgreen", "St"="lightblue", "Dr"="yellow", "Ct"="red","Ave"=="purple","Cir"="lightgreen","82"="pink","Loop"="maroon","Pl"="black","Blvd"="grey")
+
+
+USA <- ggplot() +
+    geom_sf(data = final_combined, aes(fill = MostCommon))+scale_fill_manual(values=suffix_colors)
+
+USA
+
+USA2 <- ggplot() +
+    geom_sf(data = final_combined, aes(fill = SecondMost)) +scale_fill_manual(values=suffix_colors)
+
+USA2
+
+USA3 <- ggplot() +
+    geom_sf(data = final_combined, aes(fill = MostCommon=="Rd")) 
+
+USA3
+
+final_combined=merge(counties,final,by="GEOID")
+
+```
+
+## Section Three
+
+```{r student3}
+
+          
+
+```
+
+
+
+## Section Four
+
+```{r student4}
+library(rvest)
+library(stringr)
+library(tidyr)
+library(sf)
+library(tidyverse)
+library(dplyr)
+
+url="https://www2.census.gov/geo/tiger/TIGER2023/ROADS/"
+x=readLines(url)
+GEOID_url=x %>% str_extract(pattern="tl_2023_\\d{5}_roads.zip")
+GEOID_url=na.omit(GEOID_url)
+GEOID=GEOID_url %>% str_extract(pattern="\\d{5}")
+
+Road_suffixes=c("Rd","Co Rd","Ln","St","Dr","Ct","Ave","Cir","82","Way","Loop","Pl","Blvd")
+
+#gets all the GEOID's
+my_sf2 = list()
+for(i in 1:50){
+  curGEOID = GEOID[i]
+  GEOID_file = GEOID_url[i]
+ url11=str_c("https://www2.census.gov/geo/tiger/TIGER2023/ROADS/", GEOID_file)
+  d=download.file(url11, dest= curGEOID, method="auto", timeout = 10)
+  unzip(curGEOID, exdir = "RoadData")
+  my_sf = read_sf(dsn = "RoadData")
+  
+  roads=function(x) {
+  my_sf$FULLNAME %>% str_which(.,x)
+}
+g=sapply(Road_suffixes,roads)
+
+
+d=c(length(g$Rd),
+    length(g$`Co Rd`),length(g$Ln),length(g$St),length(g$Dr),length(g$Ct),length(g$Ave),length(g$Cir),length(g$`82`),length(g$Way),length(g$Loop),length(g$Pl),length(g$Blvd))
+
+#split=my_sf$FULLNAME %>% str_split(.,"\\s") %>% lapply(.,tail,n=1) %>% unlist()
+#table(split) %>% as.data.frame() %>% arrange(desc(Freq))
+
+names(d)=Road_suffixes
+temp=slice_max(as.data.frame(d),d,n=2) %>% rownames()
+
+  my_sf2[[i]] = my_sf %>% mutate(GEOID = curGEOID) %>% mutate(MostCommon=temp[1]) %>% mutate(SecondMost=temp[2])
+  
+  
+  file.remove(curGEOID)
+  unlink("RoadData", recursive = TRUE, force = TRUE)
+}
+# map_df
+
+combine_data=bind_rows(my_sf2)
+
+write_csv(combine_data, "combined_data.csv")
+
+final_data=combine_data %>% distinct(GEOID,.keep_all=TRUE)
+
+write_csv(final_data,"final_data.csv")
+
+```
+
+```{r}
+
+
+```
