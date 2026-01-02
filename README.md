@@ -1,6 +1,7 @@
 # Road Suffix Project
 
-Overview \\
+Overview
+
 This project analyzes road name suffixes across U.S. counties using 2023 Census TIGER/Line road shapefiles. For each county, it identifies the most common and second most common road suffix and visualizes these patterns on a map.
 
 What the Project Does
@@ -13,5 +14,6 @@ What the Project Does
 Output 
 - final.csv: Most and second most common road suffix per county
 
-Purpose \\
+Purpose
+
 This project demonstrates working with large-scale spatial data, string analysism and geographic visualization in R using publiclu available government data. 
