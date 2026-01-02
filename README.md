@@ -16,4 +16,4 @@ Output
 
 Purpose
 
-This project demonstrates working with large-scale spatial data, string analysism and geographic visualization in R using publiclu available government data. 
+This project demonstrates working with large-scale spatial data, string analysis and geographic visualization in R using publiclu available government data. 
